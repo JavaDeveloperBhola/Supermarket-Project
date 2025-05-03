@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supermarket Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f4;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: #121212;
+      color: white;
+    }
+
+    .sidebar {
+      height: 100vh;
+      background: linear-gradient(135deg, #FFA500, #FF7F50);
+      color: white;
+      padding: 1rem;
+      width: 260px;
+      position: fixed;
+      overflow-y: auto;
+    }
+
+    .sidebar h4 {
+      margin-bottom: 2rem;
+    }
+
+    .sidebar h6 {
+      margin-top: 2rem;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+
+    .sidebar .nav-link {
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .main-content {
+      margin-left: 270px;
+      padding: 2rem;
+    }
+
+    .section-title {
+      margin-bottom: 1.5rem;
+      font-weight: bold;
+    }
+
+    .content-section {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    .toggle-theme {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      cursor: pointer;
+      color: white;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dashboard-cards .card {
+      transition: transform 0.3s;
+    }
+
+    .dashboard-cards .card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <h6>Dashboard</h6>
+    <nav class="nav flex-column">
+      <span class="nav-link active" data-target="overview"><i class="fas fa-tachometer-alt me-2"></i>Overview</span>
+    </nav>
+
+    <h6>Buyer Panel</h6>
+    <nav class="nav flex-column">
+      <span class="nav-link" data-target="buyers"><i class="fas fa-users me-2"></i>Buyers</span>
+      <span class="nav-link" data-target="orders"><i class="fas fa-box me-2"></i>Orders</span>
+    </nav>
+
+    <h6>Seller Panel</h6>
+    <nav class="nav flex-column">
+      <span class="nav-link" data-target="sellers"><i class="fas fa-user-tie me-2"></i>Sellers</span>
+      <span class="nav-link" data-target="products"><i class="fas fa-tags me-2"></i>Products</span>
+    </nav>
+
+    <h6>System</h6>
+    <nav class="nav flex-column">
+      <span class="nav-link" data-target="reports"><i class="fas fa-file-alt me-2"></i>Reports</span>
+      <span class="nav-link" data-bs-toggle="modal" data-bs-target="#logoutModal">
+  <i class="fas fa-sign-out-alt me-2"></i>Logout
+</span>
+    </nav>
+
+    <div class="toggle-theme" onclick="toggleTheme()">
+      <i class="fas fa-moon"></i> Toggle Theme
+    </div>
+  </div>
+
+  <div class="main-content">
+    
+    <section id="overview" class="content-section active">
+      <h3 class="section-title">Overview Dashboard</h3>
+      <div class="row dashboard-cards mb-4">
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Buyers</h5>
+              <p class="fs-4" id="totalBuyers">...</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Orders</h5>
+              <p class="fs-4" id="totalOrders">...</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Sellers</h5>
+              <p class="fs-4" id="totalSellers">...</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5>Total Products</h5>
+              <p class="fs-4" id="totalProducts">...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Summary Chart</h5>
+          <canvas id="summaryChart" height="120"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="buyers" class="content-section">
+      <h3 class="section-title">Buyer List</h3>
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+          <tbody id="buyerTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="orders" class="content-section">
+      <h3 class="section-title">Recent Orders</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead><tr><th>Customer</th><th>Date</th><th>Total</th></tr></thead>
+          <tbody id="orderTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sellers" class="content-section">
+      <h3 class="section-title">Seller List</h3>
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th></tr></thead>
+          <tbody id="sellerTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="products" class="content-section">
+        <h3 class="mb-3">Product List</h3>
+        <div class="table-responsive">
+          <table class="table table-sm">
+            <thead><tr><th>Name</th><th>Category</th><th>Stock</th><th>Price</th></tr></thead>
+            <tbody id="productTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="reports" class="content-section">
+        <h3 class="section-title">Reports</h3>
+        <p class="mb-3">Export data and charts as PDF files.</p>
+      
+        <div class="mb-3">
+          <button class="btn btn-outline-primary me-2" onclick="downloadReport('buyers')">Download Buyers</button>
+          <button class="btn btn-outline-primary me-2" onclick="downloadReport('sellers')">Download Sellers</button>
+          <button class="btn btn-outline-primary me-2" onclick="downloadReport('orders')">Download Orders</button>
+          <button class="btn btn-outline-primary me-2" onclick="downloadReport('products')">Download Products</button>
+        </div>
+      
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Bar Chart Overview</h5>
+                <canvas id="barChartReport" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Pie Chart Distribution</h5>
+                <canvas id="pieChartReport" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      
+        <button class="btn btn-success mt-3" onclick="downloadPDF()">Download Full Report as PDF</button>
+      </section>      
+
+  </div>
+<!-- confirmation modal -->
+  <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to logout?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="confirmLogout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<!-- login modal -->
+  <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-labelledby="adminLoginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminLoginModalLabel">Admin Login</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" disabled></button>
+        </div>
+        <div class="modal-body">
+          <form id="adminLoginForm">
+            <div class="mb-3">
+              <label for="adminUsername" class="form-label">Username</label>
+              <input type="text" class="form-control" id="adminUsername" required>
+            </div>
+            <div class="mb-3">
+              <label for="adminPassword" class="form-label">Password</label>
+              <input type="password" class="form-control" id="adminPassword" required>
+            </div>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+          </form>
+          <div class="text-danger mt-2" id="loginError" style="display: none;">Invalid credentials</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    if (!sessionStorage.getItem("adminKey")) {
+      const loginModal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+      loginModal.show();
+    }
+  });
+  
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  
+    function showSection(id) {
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+      document.querySelector(`.nav-link[data-target="${id}"]`).classList.add('active');
+    }
+  
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function () {
+        const target = this.getAttribute('data-target');
+        showSection(target);
+      });
+    });
+  
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+    }
+  
+    fetch('http://127.0.0.1:8000/users/buyers').then(res => res.json()).then(data => {
+      document.getElementById('buyerTable').innerHTML = (data || []).map(b =>
+        `<tr><td>${escapeHtml(b.name)}</td><td>${escapeHtml(b.email)}</td><td>${escapeHtml(b.phone)}</td></tr>`).join('');
+      document.getElementById('totalBuyers').textContent = data.length || 0;
+    });
+  
+    fetch('http://127.0.0.1:8000/users/orders').then(res => res.json()).then(data => {
+      document.getElementById('orderTable').innerHTML = (data || []).map(o =>
+        `<tr><td>${escapeHtml(o.name)}</td><td>${escapeHtml(o.date)}</td><td>$${escapeHtml(o.price)}</td></tr>`).join('');
+      document.getElementById('totalOrders').textContent = data.length || 0;
+    });
+  
+    fetch('http://127.0.0.1:8000/users/sellers').then(res => res.json()).then(data => {
+      document.getElementById('sellerTable').innerHTML = (data || []).map(s =>
+        `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.email)}</td><td>${escapeHtml(s.phone)}</td></tr>`).join('');
+      document.getElementById('totalSellers').textContent = data.length || 0;
+    });
+  
+    fetch('http://127.0.0.1:8000/users/products').then(res => res.json()).then(data => {
+      document.getElementById('productTable').innerHTML = (data || []).map(p =>
+        `<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.category)}</td><td>${escapeHtml(p.stock)}</td><td>${escapeHtml(p.price)}</td></tr>`).join('');
+      document.getElementById('totalProducts').textContent = data.length || 0;
+    });
+  
+    // Example Chart Setup
+    document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById('summaryChart').getContext('2d');
+    
+    // Store the chart instance in a variable
+    const summaryChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Buyers', 'Orders', 'Sellers', 'Products'],
+        datasets: [{
+          label: 'Counts',
+          data: [0, 0, 0, 0], // Will be updated dynamically
+          backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50']
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Fetch the counts and update the chart
+    Promise.all([
+      fetch('http://127.0.0.1:8000/users/buyers').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/orders').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/sellers').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/products').then(res => res.json())
+    ]).then(([buyers, orders, sellers, products]) => {
+      const updatedData = [
+        buyers?.length || 0,
+        orders?.length || 0,
+        sellers?.length || 0,
+        products?.length || 0
+      ];
+      summaryChart.data.datasets[0].data = updatedData;
+      summaryChart.update();
+    }).catch(err => {
+      console.error("Error fetching chart data:", err);
+    });
+  });
+
+  let barChart, pieChart;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    Promise.all([
+      fetch('http://127.0.0.1:8000/users/buyers').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/orders').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/sellers').then(res => res.json()),
+      fetch('http://127.0.0.1:8000/users/products').then(res => res.json())
+    ]).then(([buyers, orders, sellers, products]) => {
+      const buyerCount = buyers.length;
+      const orderCount = orders.length;
+      const sellerCount = sellers.length;
+      const productCount = products.length;
+
+      // Bar Chart
+      const barCtx = document.getElementById('barChartReport').getContext('2d');
+      barChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Buyers', 'Orders', 'Sellers', 'Products'],
+          datasets: [{
+            label: 'Counts',
+            data: [buyerCount, orderCount, sellerCount, productCount],
+            backgroundColor: ['#007bff', '#ffc107', '#28a745', '#dc3545']
+          }]
+        },
+        options: { responsive: true }
+      });
+
+      // Pie Chart
+      const pieCtx = document.getElementById('pieChartReport').getContext('2d');
+      pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+          labels: ['Buyers', 'Orders', 'Sellers', 'Products'],
+          datasets: [{
+            data: [buyerCount, orderCount, sellerCount, productCount],
+            backgroundColor: ['#007bff', '#ffc107', '#28a745', '#dc3545']
+          }]
+        },
+        options: { responsive: true }
+      });
+    });
+  });
+
+  async function downloadReport(type) {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/users/${type}`);
+      const data = await res.json();
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Title
+      doc.setFontSize(18);
+      doc.text(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`, 14, 20);
+
+      // Format and add content
+      let yOffset = 30;
+      data.forEach((item, index) => {
+        const entry = typeof item === 'object' ? JSON.stringify(item, null, 2) : String(item);
+
+        doc.setFontSize(10);
+        doc.text(entry, 14, yOffset, { maxWidth: 180 });
+
+        yOffset += 20;
+
+        if (yOffset > 270) {
+          doc.addPage();
+          yOffset = 20;
+        }
+      });
+
+      // Save the PDF
+      doc.save(`${type}_report.pdf`);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    }
+  }
+
+
+  async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    const barCanvas = document.getElementById("barChartReport");
+    const pieCanvas = document.getElementById("pieChartReport");
+
+    const barImg = await html2canvas(barCanvas).then(canvas => canvas.toDataURL("image/png"));
+    const pieImg = await html2canvas(pieCanvas).then(canvas => canvas.toDataURL("image/png"));
+
+    pdf.text("Supermarket Report Charts", 10, 10);
+    pdf.addImage(barImg, "PNG", 10, 20, 180, 80);
+    pdf.addPage();
+    pdf.text("Pie Chart Overview", 10, 10);
+    pdf.addImage(pieImg, "PNG", 10, 20, 180, 80);
+
+    pdf.save("Supermarket_Report.pdf");
+  }
+
+
+
+  document.getElementById("adminLoginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const username = document.getElementById("adminUsername").value;
+    const password = document.getElementById("adminPassword").value;
+
+    // ✅ Replace this with your actual admin validation
+    if (username === "admin" && password === "admin123") {
+      sessionStorage.setItem("adminKey", "true");
+
+      // Hide modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById("adminLoginModal"));
+      modal.hide();
+
+      // Optional: Show success toast
+    } else {
+      document.getElementById("loginError").style.display = "block";
+    }
+  });
+  
+  function confirmLogout() {
+    sessionStorage.removeItem("adminKey");
+
+    // Prevent back nav
+    history.pushState(null, null, location.href);
+    window.onpopstate = () => history.pushState(null, null, location.href);
+
+    // Redirect to home
+    window.location.replace("/");
+  }
+
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
