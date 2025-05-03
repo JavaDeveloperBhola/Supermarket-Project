@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supermarket Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.3s, color 0.3s;
+    }
+    .sidebar {
+      height: 100vh;
+      background: #f8f9fa;
+      padding-top: 1rem;
+      position: fixed;
+      width: 250px;
+      overflow-y: auto;
+      border-right: 1px solid #dee2e6;
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      text-decoration: none;
+      color: #333;
+      transition: 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #ffc107;
+      color: white;
+    }
+    .sidebar a i {
+      margin-right: 10px;
+    }
+    .content {
+      margin-left: 250px;
+      padding: 20px;
+    }
+    .navbar-brand {
+      font-weight: bold;
+    }
+    .dark-mode {
+      background-color: #121212;
+      color: #eee;
+    }
+    .dark-mode .sidebar {
+      background-color: #1f1f1f;
+      border-right: 1px solid #333;
+    }
+    .dark-mode .sidebar a {
+      color: #ccc;
+    }
+    .dark-mode .sidebar a:hover {
+      background-color: #ffa500;
+      color: white;
+    }
+    .chart-container {
+      width: 100%;
+      height: 300px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="text-center mb-4">
+    <img src="resources/img/default-user.jpg" width="100px"  class="rounded-circle" alt="User">
+    <h6 class="mt-2" id="userName">User</h6>
+    <p class="text-muted" id="userRole">Buyer</p>
+    <button class="btn btn-sm btn-outline-warning" onclick="toggleRole()">Switch Role</button>
+  </div>
+  <a href="#" class="active" onclick="showSection('dashboard')"><i class="bi bi-grid"></i> Dashboard</a>
+  <a href="#" onclick="showSection('profile')"><i class="bi bi-person"></i> Profile</a>
+  <a href="#" onclick="showSection('orders')"><i class="bi bi-box"></i> Orders</a>
+  <a href="#" onclick="showSection('wishlist')" id="wishlistMenu"><i class="bi bi-heart"></i> Wishlist</a>
+  <a href="#" onclick="showSection('cart')" id="cartMenu"><i class="bi bi-cart"></i> Cart</a>
+  <a href="#" onclick="showSection('products')" id="productsMenu" class="d-none"><i class="bi bi-box-seam"></i> Products</a>
+  <a href="#" onclick="showSection('reports')"><i class="bi bi-bar-chart"></i> Reports</a>
+  <a href="#" onclick="toggleDarkMode()"><i class="bi bi-moon"></i> Dark/Light Mode</a>
+  <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-warning mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">🛒 Supermarket</a>
+      <form class="d-flex ms-auto" role="search">
+        <input class="form-control me-2" type="search" placeholder="Search products..." aria-label="Search">
+        <button class="btn btn-outline-warning" type="submit">Search</button>
+      </form>
+    </div>
+  </nav>
+
+  <!-- Sections -->
+  
+
+  <div id="dashboard">
+  <h3>Welcome back, <span id="dashboardName">...</span>!</h3>
+  <div class="row mt-4">
+    <!-- Orders -->
+    <div class="col-md-4">
+      <div class="card text-bg-warning mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Orders</h5>
+          <p class="card-text fs-4" id="orderValue">Data Fetching ...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishlist (Buyer) -->
+    <div class="col-md-4" id="buyerStats">
+      <div class="card text-bg-success mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Wishlist</h5>
+          <p class="card-text fs-4">Comming soon</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products (Seller) -->
+    <div class="col-md-4 d-none" id="sellerStats">
+      <div class="card text-bg-info mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Products</h5>
+          <p class="card-text fs-4">Data fetching ....</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New: Recent Activity -->
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      Recent Activity
+    </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Order #12345 delivered successfully</li>
+      <li class="list-group-item"><i class="bi bi-bag-plus text-warning me-2"></i> Added "Organic Apples" to your cart</li>
+      <li class="list-group-item"><i class="bi bi-heart-fill text-danger me-2"></i> Wishlisted "Peanut Butter Smooth"</li>
+    </ul>
+  </div>
+
+  <!-- New: Discounts -->
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">
+      Ongoing Discounts
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="card h-100 border-success">
+            <div class="card-body">
+              <h6 class="card-title">🛍 Buy 1 Get 1 Free</h6>
+              <p class="card-text">On selected dairy products this weekend only!</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-danger">
+            <div class="card-body">
+              <h6 class="card-title">🔥 Flat 30% Off</h6>
+              <p class="card-text">On fresh bakery items till 10th April</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-warning">
+            <div class="card-body">
+              <h6 class="card-title">🎁 Special Bundle</h6>
+              <p class="card-text">Pack of 5 spices at just ₹199</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!--edit profile-->
+  <div id="profile" class="d-none">
+    <h3>Edit Profile</h3>
+    <form class="row g-3 mt-2" id="editProfileForm">
+      <div class="col-md-6">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="Surya Kumar">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="surya@example.com">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phone</label>
+        <input type="tel" class="form-control" id="phone" name="phone" placeholder="1234567890">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Date of Birth</label>
+        <input type="date" class="form-control" name="dob" id="dob" >
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Country</label>
+        <input type="text" class="form-control" name="country" id="country" placeholder="India">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">State</label>
+        <input type="text" class="form-control" name="state" id="state" placeholder="Odisha">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">District</label>
+        <input type="text" class="form-control" name="district" id="district" placeholder="Ganjam">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">City</label>
+        <input type="text" class="form-control" name="city" id="city" placeholder="Berhampur">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Pin</label>
+        <input type="number" class="form-control" name="pin" id="pin" placeholder="761001">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-control" name="password" id="password" placeholder="SuryaJava">
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-warning">Save Changes</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- list of orders -->
+  <div id="orders" class="container my-4 d-none">
+    <h3 class="mb-4 text-primary">Your Orders</h3>
+    <button class="btn btn-outline-primary mb-3" onclick="showUserOrders(localStorage.getItem('user_id'))">
+      Refresh Orders
+    </button>
+    <div id="orderList" class="row row-cols-1 row-cols-md-2 g-4">
+      <!-- Order cards will be injected here -->
+    </div>
+  </div>
+
+  <div id="wishlist" class="d-none">
+    <h3>Your Wishlist</h3>
+    <h4>coming soon...</h4>
+  </div>
+
+  <div id="cart" class="d-none">
+    <h3>Cart</h3>
+    <h4>coming soon...</h4>
+  </div>
+
+
+  <div id="products" class="d-none">
+    <h3>Available Products</h3>
+    <div id="product-list" class="row g-4"></div>
+  </div>
+
+  <div id="reports" class="d-none">
+    <h3>Reports & Analytics</h3>
+    <div class="chart-container my-4">
+      <canvas id="reportChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- update user Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-success">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="successModalLabel">Profile Updated</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Your profile has been successfully updated!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Okay</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- seller switch modal -->
+<div class="modal fade" id="notSellerModal" tabindex="-1" aria-labelledby="notSellerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-warning">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title" id="notSellerModalLabel">Seller Access Needed</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        You currently don't have seller access. Would you like to activate your seller account now?
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button id="activateSellerBtn" class="btn btn-success" onclick="seller_activate()">Activate Seller Account</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- <script src="main.js"></script> -->
+    <script src="userSession.js"></script>
+<script>
+  // load user_dashboard
+  window.onload = async function() {
+    uid=localStorage.getItem("user_id")
+    // console.log(uid);
+    
+        try {
+            const apiUrl = `http://127.0.0.1:8000/users/userid?user_id=${uid}`;
+
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const responseData = await response.json(); // Get JSON response
+            // console.log(responseData);
+            
+            if (response.ok) {
+                document.getElementById("dashboardName").innerText=responseData.name.split(" ")[0];
+                document.getElementById("userName").innerText=responseData.name
+                document.getElementById("orderValue").innerText=responseData.ordersLength
+                document.getElementById("name").value=responseData.name
+                document.getElementById("email").value=responseData.email
+                document.getElementById("phone").value=responseData.phone
+                document.getElementById("dob").value=responseData.dob
+                document.getElementById("country").value=responseData.country
+                document.getElementById("state").value=responseData.state
+                document.getElementById("city").value=responseData.city
+                document.getElementById("district").value=responseData.district
+                document.getElementById("pin").value=responseData.pin
+                document.getElementById("password").value=responseData.password
+
+                localStorage.setItem("is_seller",responseData.seller_designation)
+            } else {
+                alert("Invalid credentials. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred.");
+        }
+        
+    };
+  
+    // update profile 
+  document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    // const formData = new FormData(this);
+    // const data = Object.fromEntries(formData.entries());
+    // console.log(data);
+    const formData = new FormData(this);
+    // Append a value from localStorage (e.g., user_id)
+    formData.append("user_id", localStorage.getItem("user_id"));
+    // Now convert to object
+    const data = Object.fromEntries(formData.entries());
+    
+    console.log(JSON.stringify(data));
+    
+    try {
+        const response = await fetch('http://127.0.0.1:8000/users/update_profile', {
+            method: 'POST',  
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          // console.log("success");
+          
+            // Show the success modal
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        } else {
+            const errorData = await response.json();
+            alert("Error updating profile: " + errorData.detail);
+        }
+    } catch (error) {
+        console.error("Request failed", error);
+        alert("Something went wrong. Please try again.");
+    }
+});
+});
+ 
+    function showSection(id) {
+      const sections = ["dashboard", "profile", "orders", "wishlist", "cart", "products", "reports"];
+      sections.forEach(sec => document.getElementById(sec).classList.add("d-none"));
+      document.getElementById(id).classList.remove("d-none");
+
+      const links = document.querySelectorAll(".sidebar a");
+      links.forEach(link => link.classList.remove("active"));
+      event.target.closest("a").classList.add("active");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const userId = localStorage.getItem("user_id");
+    if (userId) {
+      showUserOrders(userId);
+    } else {
+      console.warn("User ID not found in local storage.");
+    }
+  });
+
+  // Fetch and display user orders
+  async function showUserOrders(userId) {
+    const ordersContainer = document.getElementById("orders");
+    const orderList = document.getElementById("orderList");
+    orderList.innerHTML = ""; // Clear existing orders
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/users/orders/${userId}`);
+      const data = await res.json();
+
+      if (!data.orders || data.orders.length === 0) {
+        orderList.innerHTML = `<div class="col"><p class="text-muted">No orders found.</p></div>`;
+      }
+
+      data.orders.forEach(order => {
+        const card = document.createElement("div");
+        card.className = "col-12"; // Full-width row for each product
+        card.innerHTML = `
+          <div class="card shadow-sm border-2 border-primary mb-4">
+            <div class="card-body">
+              <h5 class="card-title">${order.product_name}</h5>
+              <p class="card-text mb-2">
+                <strong>Price:</strong> ₹${order.price}<br>
+                <strong>Discount:</strong> ${order.discount}%<br>
+                <strong>Date:</strong> ${order.date}
+              </p>
+              <span class="badge bg-${getStatusColor(order.status)}">${order.status}</span>
+              <p class="mt-2 mb-0 text-muted"><small>Payment: ${order.payment_mode}</small></p>
+            </div>
+          </div>
+        `;
+        orderList.appendChild(card);
+      });
+
+
+      ordersContainer.classList.remove("d-none");
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    }
+  }
+
+  // Helper: Get badge color based on order status
+  function getStatusColor(status) {
+    switch (status.toLowerCase()) {
+      case "delivered": return "success";
+      case "pending": return "warning";
+      case "cancelled": return "danger";
+      default: return "secondary";
+    }
+  }
+
+  async function showUserOrders(userId) {
+    const ordersContainer = document.getElementById("orders");
+    const orderList = document.getElementById("orderList");
+    orderList.innerHTML = ""; // Clear existing orders
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/users/orders/${userId}`);
+      const data = await res.json();
+
+      if (!data.orders || data.orders.length === 0) {
+        orderList.innerHTML = `<div class="col"><p class="text-muted">No orders found.</p></div>`;
+      }
+
+      data.orders.forEach(order => {
+        const card = document.createElement("div");
+        card.className = "col-12"; // Full-width row for each product
+        card.innerHTML = `
+          <div class="card shadow-sm border-2 border-primary mb-4">
+            <div class="card-body">
+              <h5 class="card-title">${order.product_name}</h5>
+              <p class="card-text mb-2">
+                <strong>Price:</strong> ₹${order.price}<br>
+                <strong>Discount:</strong> ${order.discount}%<br>
+                <strong>Date:</strong> ${order.date}
+              </p>
+              <span class="badge bg-${getStatusColor(order.status)}">${order.status}</span>
+              <p class="mt-2 mb-0 text-muted"><small>Payment: ${order.payment_mode}</small></p>
+            </div>
+          </div>
+        `;
+        orderList.appendChild(card);
+      });
+
+
+      ordersContainer.classList.remove("d-none");
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    }
+  }
+
+    
+
+  // modal for activate seller
+  const notAllowedModal = new bootstrap.Modal(document.getElementById("notSellerModal"));
+// user role change 
+  function toggleRole() {
+  const roleElement = document.getElementById("userRole");
+  const currentRole = roleElement.textContent.trim();
+  const isBuyer = currentRole === "Buyer";
+
+  // Check if user has seller permission from localStorage
+  const isSellerAllowed = localStorage.getItem("is_seller") === "true";
+
+  // Trying to switch to Seller
+  if (isBuyer && !isSellerAllowed) {
+    // Show modal if not allowed
+    
+    notAllowedModal.show();
+    return;
+  }
+
+  // Toggle role
+  const newRole = isBuyer ? "Seller" : "Buyer";
+  roleElement.textContent = newRole;
+
+  // Toggle menu visibility
+  document.getElementById("wishlistMenu").classList.toggle("d-none", newRole !== "Buyer");
+  document.getElementById("cartMenu").classList.toggle("d-none", newRole !== "Buyer");
+  document.getElementById("productsMenu").classList.toggle("d-none", newRole !== "Seller");
+  document.getElementById("buyerStats").classList.toggle("d-none", newRole !== "Buyer");
+  document.getElementById("sellerStats").classList.toggle("d-none", newRole !== "Seller");
+
+  // Store new role in localStorage
+  localStorage.setItem("userRole", newRole);
+
+  // Update dashboard content based on role
+  // updateDashboardByRole(newRole);
+}
+
+  // activate seller account
+  async function seller_activate(){
+    uid=localStorage.getItem("user_id")
+    // console.log(uid);
+    
+        try {
+            const apiUrl = `http://127.0.0.1:8000/users/update_to_seller?user_id=${uid}`;
+
+            const response = await fetch(apiUrl, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const responseData = await response.json(); // Get JSON response
+            // console.log(responseData);
+            
+            if (response.ok) {
+                localStorage.setItem("is_seller",responseData.designation.is_seller)
+                if (notAllowedModal) {
+                  notAllowedModal.hide();
+  }
+            } else {
+                alert("Invalid credentials. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred.");
+        }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedRole = localStorage.getItem("userRole") || "Buyer";
+    document.getElementById("userRole").textContent = savedRole;
+    document.getElementById("wishlistMenu").classList.toggle("d-none", savedRole !== "Buyer");
+    document.getElementById("cartMenu").classList.toggle("d-none", savedRole !== "Buyer");
+    document.getElementById("productsMenu").classList.toggle("d-none", savedRole !== "Seller");
+    document.getElementById("buyerStats").classList.toggle("d-none", savedRole !== "Buyer");
+    document.getElementById("sellerStats").classList.toggle("d-none", savedRole !== "Seller");
+  });
+
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  //reports
+  const ctx = document.getElementById('reportChart');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+      datasets: [{
+        label: 'Orders',
+        data: [12, 19, 8, 14],
+        backgroundColor: 'orange'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  // log out 
+  function logout() {
+    localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("user_id");
+    window.location.replace("index.html");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Detail</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    .product-img {
+      max-width: 100%;
+      border-radius: 12px;
+    }
+    .review {
+      background-color: #f8f9fa;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+    }
+    .discount-badge {
+      font-size: 0.9rem;
+      background-color: #ffc107;
+      color: #212529;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      margin-left: 0.5rem;
+    }
+  </style>
+
+</head>
+<body>
+
+<div class="container py-5">
+  <div class="row g-5">
+    <!-- Product Image -->
+    <div class="col-md-6">
+      <img id="product-image" src="" alt="Product Image" class="product-img shadow">
+    </div>
+
+    <!-- Product Info -->
+    <div class="col-md-6">
+      <h2 id="product-name" class="fw-bold">Loading...</h2>
+      <p id="product-brand" class="text-primary"></p>
+      <p id="product-category" class="text-muted"></p>
+      <h4 class="text-success mb-3" id="product-price"></h4>
+      <div id="product-discount" class="mb-2"></div>
+      <p id="product-description"></p>
+
+      <div class="mb-3">
+        <label for="quantity" class="form-label">Quantity:</label>
+        <input type="number" id="quantity" value="1" min="1" class="form-control d-inline quantity-input">
+      </div>
+
+      <button class="btn btn-success px-4" onclick="handleBuyNow()">Buy Now</button>
+    </div>
+  </div>
+
+  <!-- Toggle Reviews -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <button class="btn btn-outline-primary mb-3" onclick="toggleReviews()">Show Reviews</button>
+      <div id="reviews-container" style="display: none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">Confirm Purchase</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to buy this item?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="confirmPurchase()">Yes, Buy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">Purchase Successful</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Thank you! Your order has been placed successfully.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let productData = null;
+
+  async function loadProduct() {
+    const productId = localStorage.getItem("selectedProduct");
+    if (!productId) return;
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/products/id/{id}?product_id=${productId}`);
+      productData = await res.json();
+
+      document.getElementById("product-image").src = productData.image || "https://source.unsplash.com/500x500/?product";
+
+      // Set name with discount badge if available
+      let nameWithDiscount = productData.name;
+      let discount = productData.discount;
+      if (productData.old_price && productData.old_price > productData.price) {
+        discount = Math.round(((productData.old_price - productData.price) / productData.old_price) * 100);
+        nameWithDiscount += ` <span class='discount-badge'>${discount}% OFF</span>`;
+      }
+      document.getElementById("product-name").innerHTML = nameWithDiscount;
+
+      document.getElementById("product-brand").textContent = `Brand: ${productData.brand || 'Unknown'}`;
+      document.getElementById("product-category").textContent = `Category: ${productData.category}`;
+
+      const priceHTML = `₹${productData.price} <small class="text-muted fs-6"><s>₹${productData.old_price || ''}</s></small>`;
+      document.getElementById("product-price").innerHTML = priceHTML;
+
+      if (discount > 0) {
+        document.getElementById("product-discount").innerHTML = `<span class='discount-badge'>${productData.discount}% OFF</span>`;
+      }
+
+      document.getElementById("product-description").textContent = productData.description;
+
+    } catch (error) {
+      console.error("Failed to load product:", error);
+    }
+  }
+
+  function toggleReviews() {
+    const container = document.getElementById("reviews-container");
+    if (!productData) return;
+
+    if (container.style.display === "none") {
+      container.style.display = "block";
+      container.innerHTML = productData.reviews && productData.reviews.length > 0 ? 
+        productData.reviews.map(review => `
+          <div class="review">
+            <strong>${review.user}</strong>
+            <p class="mb-1">${"⭐️".repeat(review.rating)}</p>
+            <p>${review.comment}</p>
+          </div>
+        `).join('') : '<p class="text-muted">No reviews yet.</p>';
+    } else {
+      container.style.display = "none";
+    }
+  }
+
+  function handleBuyNow() {
+    const quantity = parseInt(document.getElementById("quantity").value);
+    if (!productData || quantity <= 0) return;
+
+    if (productData.stock && quantity > productData.stock) {
+      alert("Not enough stock available!");
+      return;
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    modal.show();
+  }
+
+  function confirmPurchase() {
+  const quantity = parseInt(document.getElementById("quantity").value);
+  const productId = localStorage.getItem("selectedProduct");
+  const userId = localStorage.getItem("user_id");
+
+  const confirmationModal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+  confirmationModal.hide();
+
+  // Call the GET API
+  fetch(`http://127.0.0.1:8000/users/order_product?user_id=${userId}&product_id=${productId}&quantity=${quantity}`)
+    .then(async res => {
+      const data = await res.json();
+      if (res.ok) {
+        // HTTP status is 2xx
+        setTimeout(() => {
+          const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+          successModal.show();
+        }, 300);
+        location.reload();
+      } else {
+        // HTTP status is NOT 2xx (e.g., 400 or 500)
+        alert(data.message || "Purchase failed. Please try again.");
+      }
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      alert("An error occurred while placing your order.");
+    });
+}
+
+  document.addEventListener("DOMContentLoaded", loadProduct);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

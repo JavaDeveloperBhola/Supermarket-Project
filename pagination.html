@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .pagination .active .page-link {
+            background-color: orange;
+            border-color: orange;
+        }
+        .pagination .active .page-link {
+            background-color: orange;
+            border-color: orange;
+        }
+        .wishlist {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .wishlist i {
+            color: red;
+            font-size: 1.2rem;
+        }
+        .card {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-fixed {
+              width: 100%;
+              height: 40px;
+          }
+          @media (max-width: 768px) {
+              .filter-section {
+                  position: fixed;
+                  top: 0;
+                  left: -100%;
+                  width: 75%;
+                  height: 100%;
+                  background: white;
+                  z-index: 1000;
+                  overflow-y: auto;
+                  padding: 20px;
+                  transition: left 0.3s ease-in-out;
+                  box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.2);
+              }
+              .filter-section.show {
+                  left: 0;
+              }
+              .filter-btn {
+                  display: block;
+                  margin-bottom: 10px;
+              }
+              .close-filter {
+                  display: block;
+              }
+          }
+          @media (min-width: 769px) {
+              .filter-btn {
+                  display: none;
+              }
+              .close-filter {
+                  display: none;
+              }
+          }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg ">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <!-- <img src="resources/img/logo.jpg" alt="Logo" width="40" height="40" class="me-2"> -->
+                <span>🛒Supermarket</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex mx-auto search-bar">
+                    <input class="form-control me-2" type="search" placeholder="Search for products..." aria-label="Search">
+                    <button class="btn btnSearch btn-warning" type="submit"><i class="fa-solid fa-search"></i></button>
+                </form>
+                
+                <!-- flipkart login dropdown -->
+                <ul class="navbar-nav ms-auto d-flex align-items-center">
+                    <!-- User/Login Dropdown -->
+                    <li class="nav-item dropdown" id="userDropdownContainer">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-user"></i> <span id="dropdownLabel">Login</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" id="userDropdownMenu">
+                            <!-- Content will be injected dynamically by JS -->
+                        </ul>
+                    </li>
+                
+                    <!-- Wishlist & Cart Links -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="fa-solid fa-heart"></i> Wishlist</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="fa-solid fa-shopping-cart"></i> Cart</a>
+                    </li>
+                </ul>
+                
+            </div>
+        </div>
+    </nav>
+
+    <!-- login modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel"><i class="fas fa-sign-in-alt"></i> Login</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="Enter your email">
+                            <span class="error-message" id="loginEmailError">Enter a valid email.</span>
+                        </div>
+    
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label"><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Enter password">
+                            <span class="error-message" id="loginPasswordError">Password must be at least 6 characters.</span>
+                        </div>
+    
+                        <!-- Submit Button -->
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-sign-in-alt"></i> Login</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- register modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel"><i class="fas fa-user-plus"></i> Register</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="registerForm">
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="fullName" class="form-label"><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" class="form-control" id="fullName" placeholder="Enter your full name">
+                            <span class="error-message" id="fullNameError">Full Name is required.</span>
+                        </div>
+    
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+                            <span class="error-message" id="emailError">Enter a valid email.</span>
+                        </div>
+    
+                        <!-- Phone Number -->
+                        <div class="mb-3">
+                            <label for="phone" class="form-label"><i class="fas fa-phone"></i> Phone Number</label>
+                            <input type="number" class="form-control" id="phone" placeholder="Enter 10-digit phone number">
+                            <span class="error-message" id="phoneError">Enter a valid 10-digit phone number.</span>
+                        </div>
+    
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label for="password" class="form-label"><i class="fas fa-lock"></i> Password</label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter password">
+                            <span class="error-message" id="passwordError">Password must be at least 6 characters.</span>
+                        </div>
+    
+                        <!-- Confirm Password -->
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label"><i class="fas fa-lock"></i> Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm password">
+                            <span class="error-message" id="confirmPasswordError">Passwords do not match.</span>
+                        </div>
+    
+                        <!-- Submit Button -->
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-user-check"></i> Register</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- product and filter section -->
+    <section>
+        <div class="container mt-4">
+            <button class="btn btn-primary filter-btn" onclick="toggleFilter()">Filters</button>
+            <div class="row">
+                <!-- Filter Section -->
+                <aside class="col-md-3 filter-section" id="filterSection">
+                    <h5>Filters <span class="float-end close-filter" style="cursor:pointer;" onclick="toggleFilter()">✖</span></h5>
+                            <div class="form-group mt-3">
+                                <label for="brand">Brand</label>
+                                <select class="form-control" id="brand">
+                                    <!-- Dynamically filled -->
+                                </select>
+                            </div>
+                            <!-- <div class="form-group mt-3">
+                                <label>Price Range</label>
+                                <div>
+                                    <input type="radio" name="price" value="100-499"> <label>₹100 - ₹499</label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="price" value="500-999"> <label>₹500 - ₹999</label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="price" value="1000-1999"> <label>₹1000 - ₹1999</label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="price" value="2000-4999"> <label>₹2000 - ₹4999</label>
+                                </div>
+                                <div>
+                                    <input type="radio" name="price" value="5000"> <label>₹5000 & above</label>
+                                </div>
+                            </div> -->
+                            <div class="form-group mt-3" id="priceFilterContainer">
+                                <label>Price Range</label>
+                                <!-- Price options will be injected here -->
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Customer Ratings</label>
+                                <div>
+                                    <input type="checkbox" id="4star" value="4"> <label for="4star">4★ & above</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="3star" value="3"> <label for="3star">3★ & above</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="2star" value="2"> <label for="2star">2★ & above</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="1star" value="1"> <label for="1star">1★ & above</label>
+                                </div>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Discount</label>
+                                <div>
+                                    <input type="checkbox" id="50off" value="50"> <label for="50off">50% or more</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="30off" value="30"> <label for="30off">30% or more</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" id="10off" value="10"> <label for="10off">10% or more</label>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-success w-100 mt-3" onclick="applyFilters()">Apply</button>
+                </aside>
+                
+                <!-- Product Grid -->
+                <div class="col-md-9">
+                    <div class="row" id="product-grid">
+                    </div>
+                    
+                    <nav>
+                        <ul class="pagination justify-content-center mt-4" id="pagination">
+                            <li class="page-item disabled" id="prev-page"><a class="page-link" href="#">&laquo; Prev</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- <a href=""> </a> -->
+    <!-- Footer Section -->
+    <section>  
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <!-- About Section -->
+                    <div class="col-md-3">
+                        <h5>About Us</h5>
+                        <p>We provide fresh groceries, top-rated products, and amazing deals at your doorstep.</p>
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="col-md-3">
+                        <h5>Categories</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#">Fruits & Vegetables</a></li>
+                            <li><a href="#">Dairy Products</a></li>
+                            <li><a href="#">Bakery Items</a></li>
+                            <li><a href="#">Beverages</a></li>
+                            <li><a href="#">Household Essentials</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="col-md-3">
+                        <h5>Quick Links</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#">My Account</a></li>
+                            <li><a href="#">Order Tracking</a></li>
+                            <li><a href="#">Wishlist</a></li>
+                            <li><a href="#">Customer Support</a></li>
+                            <li><a href="#">FAQs</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div class="col-md-3">
+                        <h5>Contact Us</h5>
+                        <p>Email: support@ecommerce.com</p>
+                        <p>Phone: +91 9876543210</p>
+                        <p>Address: 123, Market Street, City, India</p>
+                        <div class="social-icons">
+                            <a href="#"><i class="fab fa-facebook"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copyright Section -->
+            <div class="copyright">
+                <p>&copy; 2025 E-Commerce. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </section>
+
+    <!-- wishlistError and add to cart error modal -->
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="infoModalLabel">Information</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                coming soon... 
+            This is not implementing now.
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        const isLoggedIn = localStorage.getItem("userLoggedIn") === "true"; // Change to true to simulate logged-in state
+    
+        const dropdownLabel = document.getElementById('dropdownLabel');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        if (isLoggedIn) {
+            dropdownLabel.textContent = 'My Account';
+            dropdownMenu.innerHTML = `
+                <li class="dropdown-header">Welcome, User</li>
+                <li><a class="dropdown-item" href="user_dashboard.html"><i class="fa-solid fa-user"></i> My Profile</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-box"></i> Orders</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="fa-solid fa-heart"></i> Wishlist</a></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#infoModal"><i class="fa-solid fa-credit-card"></i> Payments</a></li>
+                
+                <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Logout</a></li>
+            `;
+        } else {
+            dropdownLabel.textContent = 'Login';
+            dropdownMenu.innerHTML = `
+                <li class="p-2 text-center">
+                    <button class="btn btn-primary w-100 mb-2"  data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                    <div>New user? <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register</a></div>
+                </li>
+            `;
+        }
+        // show filter responsive
+        function toggleFilter() {
+            const filterSection = document.getElementById("filterSection");
+            filterSection.classList.toggle("show");
+        }
+
+        
+        // api data fetch
+        document.addEventListener("DOMContentLoaded", function () {
+            category=localStorage.getItem("category")
+            const apiUrl = `http://127.0.0.1:8000/products/category/${category}`; // Your FastAPI endpoint (no query params)
+            let allProducts = []; // Store all fetched products
+            let filteredProducts = [];
+            let productsPerPage = 8;
+            let currentPage = 1;
+            let totalPages = 1;
+
+            const productGrid = document.getElementById("product-grid");
+            const pagination = document.getElementById("pagination");
+
+            async function fetchAllProducts() {
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error("Failed to fetch products");
+                    const data = await response.json();
+                    allProducts = data;
+                    populateBrandFilter(allProducts);
+                    populatePriceFilter(allProducts);
+                    // console.log(allProducts);
+                    
+                    applyFilters(); // Apply filters after fetching
+                } catch (error) {
+                    console.error("Error fetching products:", error);
+                    displayPlaceholderProducts();
+                }
+            }
+
+            function populateBrandFilter(products) {
+            const brandDropdown = document.getElementById("brand");
+            const brandSet = new Set();
+
+            products.forEach(product => {
+                if (product.brand) {
+                    brandSet.add(product.brand);
+                }
+            });
+
+            // Clear existing options and add "All" option
+            brandDropdown.innerHTML = `<option value="all">All</option>`;
+
+            // Add unique brands to dropdown
+            [...brandSet].sort().forEach(brand => {
+                brandDropdown.innerHTML += `<option value="${brand}">${brand}</option>`;
+            });
+        }
+
+        function populatePriceFilter(products) {
+            const priceContainer = document.getElementById("priceFilterContainer");
+            
+            const prices = products.map(p => p.price).sort((a, b) => a - b);
+            const minPrice = Math.floor(prices[0] / 100) * 100;
+            const maxPrice = Math.ceil(prices[prices.length - 1] / 100) * 100;
+
+            const rangeStep = 500; // adjust this to 100 or 1000 based on your store
+            let current = minPrice;
+            let ranges = [];
+
+            while (current < maxPrice) {
+                let upper = current + rangeStep - 1;
+                upper = Math.ceil(upper / 100) * 100; // Round to nearest 100
+                if (upper > maxPrice) upper = maxPrice;
+                ranges.push({ min: current, max: upper });
+                current += rangeStep;
+            }
+
+            priceContainer.innerHTML = `<label>Price Range</label>`;
+            ranges.forEach((range, index) => {
+                const value = `${range.min}-${range.max}`;
+                priceContainer.innerHTML += `
+                    <div>
+                        <input type="radio" name="price" id="price${index}" value="${value}">
+                        <label for="price${index}">₹${range.min} - ₹${range.max}</label>
+                    </div>`;
+            });
+        }
+
+        function applyFilters() {
+            const filters = getSelectedFilters();
+
+            filteredProducts = allProducts.filter(product => {
+                let pass = true;
+
+                if (filters.brand !== "all") {
+                    pass = pass && product.brand === filters.brand;
+                }
+
+                if (filters.min_price && filters.max_price) {
+                    pass = pass && product.price >= filters.min_price && product.price <= filters.max_price;
+                }
+
+                if (filters.rating) {
+                    pass = pass && product.rating >= filters.rating;
+                }
+
+                if (filters.discount) {
+                    pass = pass && product.discount >= filters.discount;
+                }
+
+                return pass;
+            });
+
+            totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+            currentPage = 1;
+            displayProducts();
+            updatePagination();
+        }
+
+        function getSelectedFilters() {
+            const brand = document.getElementById('brand').value;
+            const priceRange = document.querySelector('input[name="price"]:checked')?.value || '';
+            const rating = [...document.querySelectorAll('input[type="checkbox"][id$="star"]:checked')]
+                .map(cb => parseInt(cb.value));
+            const discount = [...document.querySelectorAll('input[type="checkbox"][id$="off"]:checked')]
+                .map(cb => parseInt(cb.value));
+
+            let min_price = '', max_price = '';
+            if (priceRange) {
+                const parts = priceRange.split('-');
+                min_price = parseInt(parts[0]);
+                max_price = parts[1] ? parseInt(parts[1]) : 100000; // Max fallback
+            }
+
+            return {
+                brand,
+                min_price,
+                max_price,
+                rating: rating.length ? Math.max(...rating) : '',
+                discount: discount.length ? Math.max(...discount) : ''
+            };
+        }
+
+        function displayProducts() {
+            const start = (currentPage - 1) * productsPerPage;
+            const end = start + productsPerPage;
+            const productsToShow = filteredProducts.slice(start, end);
+            console.log(productsToShow);
+            // console.log(productsToShow.id);
+            
+            productGrid.innerHTML = productsToShow.map(product => `
+                <div class='col-md-3 mb-4'>
+                    <div class='card p-2'>
+                        <div class='wishlist' data-bs-toggle='modal' data-bs-target='#infoModal'><i class='bi bi-heart'></i></div>
+                        <img src="" class="card-img-top" alt="${product.name}">
+                        <div class='card-body text-center'>
+                            <h6 class='card-title'>${product.name}</h6>
+                            <p class='card-text'>${product.brand}</p>
+                            <h5>₹${product.price.toFixed(2)}</h5>
+                            <button class='btn btn-warning btn-fixed' data-bs-toggle='modal' data-bs-target='#infoModal'>Add to Cart</button>
+                            <button class='btn btn-primary btn-fixed product-link' data_id="${product.id}">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("product-link")) {
+            const productId = e.target.getAttribute("data_id");
+            localStorage.setItem("selectedProduct", productId);
+            window.location="product.html"
+            }
+        });
+
+        function displayPlaceholderProducts() {
+            productGrid.innerHTML = Array.from({ length: productsPerPage }, (_, i) => `
+                <div class='col-md-3 mb-4'>
+                    <div class='card p-2'>
+                        <img src='' class='card-img-top' alt='Placeholder'>
+                        <div class='card-body text-center'>
+                            <h6 class='card-title'>Placeholder Product ${i + 1}</h6>
+                            <p class='card-text'>Brand X</p>
+                            <h5>₹99.99</h5>
+                            <button class='btn btn-warning btn-fixed'>Add to Cart</button>
+                            <button class='btn btn-primary btn-fixed'>Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updatePagination() {
+            pagination.innerHTML = '<li class="page-item" id="prev-page"><a class="page-link" href="#">&laquo; Prev</a></li>';
+
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.innerHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#">${i}</a></li>`;
+            }
+
+            pagination.innerHTML += '<li class="page-item" id="next-page"><a class="page-link" href="#">Next &raquo;</a></li>';
+        }
+
+        pagination.addEventListener("click", function (event) {
+            if (event.target.tagName === "A") {
+                let selected = event.target.textContent;
+                if (selected === "« Prev" && currentPage > 1) {
+                    currentPage--;
+                } else if (selected === "Next »" && currentPage < totalPages) {
+                    currentPage++;
+                } else if (!isNaN(selected)) {
+                    currentPage = parseInt(selected);
+                }
+                displayProducts();
+                updatePagination();
+            }
+        });
+
+        window.applyFilters = applyFilters; // Expose to global for button onclick
+
+        fetchAllProducts(); // Start
+        });
+
+        function setProductId(id) {
+            console.log(id);
+            localStorage.setItem("product_id", id);
+            window.location.href = "single_product.html";
+        }
+
+        function applyFilters() {
+            toggleFilter();
+            alert("Filters applied!");
+        }
+    </script>
+
+    </body>
+</html>
